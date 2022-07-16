@@ -27,6 +27,39 @@ IS_NUMBER:
 	RET
 
 
+[GLOBAL MEMORY_COPY]
+;qword MEMORY_COPY(RDI: byte dst[dstlen], RSI: dstlen, RDX: byte src[srclen], RCX: qword srclen)
+MEMORY_COPY:
+	MOV		RDX, RSI	;Destination length
+	MOV		RSI, RDI	;Destination pointer
+	MOV		RDI, RSI	;Source pointer
+	MOV		RSI, RCX	;Source length
+	MOV		RCX, 0x0
+	REP 	MOVSB
+	RET
+
+[GLOBAL REVERSE]
+REVERSE:
+;qword REVERSE(RDI: char buf[length], RSI: qword length)
+	XOR 	RAX, RAX	;qword i = 0;
+	MOV 	RDX, RSI	;qword j = length
+	.0_l:
+		MOV		DL, BYTE [RDI + RAX]	;char c = buf[i];
+		MOV		DH, BYTE [RDI + RDX]	;char d = buf[j];
+
+		CMP		DL, 0x0			;if (c == '\0')
+		RET
+
+		MOV		BYTE [RDI + RAX], DH	;buf[j] = d;
+		MOV		BYTE [RDI + RDX], DL	;buf[j] = c;
+
+		INC 	RAX			;i++
+		
+		DEC 	RDX			;j--
+		CMP 	RAX, RSI	;i < length
+		JL		.0_l
+	RET
+
 [GLOBAL STRING_TO_UINTEGER]
 ;qword STRING_TO_UINTEGER(RDI: char str[len], RSI: qword len)
 STRING_TO_UINTEGER:
@@ -97,7 +130,6 @@ STRING_TO_UINTEGER:
 UINTEGER_TO_STRING:
 	XOR		RCX, RCX ;Counter
 	.0_l:
-		
 
 		INC		RCX
 		CMP		RCX, RDX
